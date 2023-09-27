@@ -23,5 +23,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/accounts/', include('accounts.urls')),
     path('api/posts/', include('posts.urls')),
-    path('api/direct_messages/', include('direct_messages.urls')),
+    path('api/direct-messages/', include('direct_messages.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
