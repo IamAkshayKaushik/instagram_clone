@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'accounts',
     'posts',
     'direct_messages',
+    'follow',
 ]
 
 REST_FRAMEWORK = {
@@ -50,6 +51,8 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         # 'rest_framework.authentication.TokenAuthentication',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 20
 }
 
 SIMPLE_JWT = {
@@ -57,10 +60,6 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=3),
 }
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-#     'PAGE_SIZE': 100
-# }
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
