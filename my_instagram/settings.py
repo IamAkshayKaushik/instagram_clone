@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-+64qwr(p=ts1-1=1_$i08-q9-akruup*nyd!t@3q-3m4fu&fdd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne',
+    'channels',
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
@@ -44,7 +46,14 @@ INSTALLED_APPS = [
     'posts',
     'direct_messages',
     'follow',
+    'calling',
 ]
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",  # Use in-memory layer for development
+    },
+}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -89,7 +98,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'my_instagram.wsgi.application'
+ASGI_APPLICATION = 'my_instagram.asgi.application'
 
 
 # Database
