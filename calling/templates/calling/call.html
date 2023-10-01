@@ -69,10 +69,7 @@
         labelUsername.innerHTML = username;
 
         let loc = window.location;
-        let wsStart = 'ws://'
-        if (loc.protocol == 'https:') {
-          wsStart = 'wss://'
-        }
+        let wsStart = loc.protocol === "https:" ? 'wss://' : 'ws://';
 
         let endpoint = wsStart + loc.host + '/ws/calls/'
 
@@ -103,23 +100,23 @@
       let data = JSON.parse(event.data)
       let peerUsername = data['peer']
       let action = data['action']
-      console.log(peerUsername, action);
 
-      if (username == peerUsername) return
+      if (username === peerUsername) return
 
       let receiver_channel_name = data['message']['receiver_channel_name']
-      if (action == "new-peer") {
+      if (action === "new-peer") {
+        console.log("Create " + action);
         createOfferer(peerUsername, receiver_channel_name)
       }
 
-      if (action == 'new-offer') {
+      if (action === 'new-offer') {
         let offer = data['message']['sdp']
         createAnswers(offer, peerUsername, receiver_channel_name)
 
         return
       }
 
-      if (action == 'new-answer') {
+      if (action === 'new-answer') {
         let answer = data['message']['sdp']
 
         let peer = mapPeer[peerUsername][0]
@@ -186,15 +183,18 @@
         'action': action,
         'message': message
       })
+      console.log('inside sendSignal ' + action);
+      console.log(jsonStr);
       websocket.send(jsonStr)
     }
 
     function createOfferer(peerUsername, receiver_channel_name) {
+      console.log("inside createOffer");
       let peer = new RTCPeerConnection(null)
       addLocalTracks(peer)
       let dataChannel = peer.createDataChannel('channel')
       dataChannel.addEventListener('open', () => {
-        console.log('dataChannel Opened');
+        console.log('dataChannel Opened in createOffer');
       })
 
       dataChannel.addEventListener('message', dcOnMessage)
@@ -240,7 +240,7 @@
       peer.addEventListener('datachannel', e => {
         peer.dataChannel = e.channel
         peer.dataChannel.addEventListener('open', () => {
-          console.log('dataChannel Opened');
+          console.log('dataChannel Opened in createAnswers');
         })
 
         peer.dataChannel.addEventListener('message', dcOnMessage)
