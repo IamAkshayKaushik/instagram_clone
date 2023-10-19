@@ -5,7 +5,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import UserProfile, RefreshTokenModel
-from .serializers import UserProfileSerializer, UserSerializer, RefreshTokenSerializer
+from .serializers import UserProfileSerializer, UserSerializer, UserSerializerWithToken, RefreshTokenSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 class UserRegistrationView(generics.CreateAPIView):
@@ -44,3 +46,17 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        serializer = UserSerializer(self.user).data
+        print(serializer)
+        for k, v in serializer.items():
+            data[k] = v
+        return data
+
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
