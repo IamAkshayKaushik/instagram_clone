@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Chat</title>
+</head>
+
+<body>
+    <h1 style="text-align: center;">Chatting App</h1>
+    <div>
+        <input id="access-token" type="text" placeholder="accessToken"><input id="receiver-user-id" type="text"
+            placeholder="receiver-user-id"><button id="submit">Open
+            WebSocket</button>
+    </div>
+    <div>
+        <ul id="msg-list"></ul>
+        <input id="msg" type="text" placeholder="Message goes here">
+    </div>
+</body>
+<script>
+    var websocket;
+    let msg = document.querySelector('#msg');
+    let msgListContainer = document.querySelector('#msg-list')
+    let submitButton = document.querySelector('#submit')
+    let accessTokenInput = document.querySelector('#access-token')
+    let receiverUserIdInput = document.querySelector("#receiver-user-id")
+
+    submitButton.addEventListener("click", (e) => {
+        let accessToken = accessTokenInput.value?.trim()
+        let receiverUserId = receiverUserIdInput.value?.trim()
+        console.log(accessToken, receiverUserId);
+        if ((!accessToken) || (!receiverUserId)) {
+            alert("Please enter both the Access Token and receiverUserId.")
+            return
+        }
+        accessTokenInput.disabled = true
+        accessTokenInput.style.visibility = 'hidden'
+
+        submitButton.disabled = true
+        submitButton.style.visibility = 'hidden'
+
+        receiverUserIdInput.disabled = true
+        receiverUserIdInput.style.visibility = 'hidden'
+
+        let loc = window.location;
+        let wsStart = loc.protocol === "https:" ? 'wss://' : 'ws://';
+
+        let endpoint = wsStart + loc.host + '/ws/chat/' + `?token=${accessToken}&receiver_user_id=${receiverUserId}`;
+
+        websocket = new WebSocket(endpoint)
+        websocket.addEventListener('open', function (event) {
+            console.log('connection opened');
+            websocket.send(JSON.stringify({
+                'my_name': "Akshay",
+                'new': "yes"
+
+            }))
+        })
+
+        websocket.addEventListener("message", (event) => {
+            let data = JSON.parse(event.data)
+            console.log(data);
+        })
+
+
+    })
+
+</script>
+
+</html>

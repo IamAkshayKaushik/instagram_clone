@@ -9,6 +9,10 @@ class CallingView(TemplateView):
     template_name = 'calling/call.html'
 
 
+class ChatView(TemplateView):
+    template_name = 'calling/chat.html'
+
+
 class CallListView(generics.ListCreateAPIView):
     # queryset = Call.objects.all()
     serializer_class = CallSerializer
