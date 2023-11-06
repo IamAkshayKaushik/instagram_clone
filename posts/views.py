@@ -4,7 +4,7 @@ from .models import Comment, Post, Likes, Shares
 
 
 class PostListView(generics.ListCreateAPIView):
-    queryset = Post.objects.all()
+    queryset = Post.objects.prefetch_related('comments', 'likes', 'shares').all()
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
