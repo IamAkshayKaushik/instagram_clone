@@ -1,14 +1,20 @@
 import { useState } from "react";
-import { useUserContext } from "../context/index";
+// import { useUserContext } from "../context/index";
+import UserService from "../services/userService";
+import { useDispatch } from "react-redux";
+import { login } from "../store/userSlice";
 
 function Login() {
-  const { login } = useUserContext();
+  const { fetchLogin } = UserService;
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
-  const handleClick = (e) => {
+  const dispatch = useDispatch();
+  const handleClick = async (e) => {
     e.preventDefault();
-    login(username, password);
+    const user = await fetchLogin(username, password);
+    if (user) {
+      dispatch(login(user));
+    }
   };
   return (
     <div className="mt-8 flex flex-col justify-center items-center">
