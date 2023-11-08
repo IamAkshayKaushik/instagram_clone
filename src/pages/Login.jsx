@@ -2,20 +2,13 @@ import { useState } from "react";
 import { useUserContext } from "../context/index";
 
 function Login() {
+  const { login } = useUserContext();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const { user, state, setState, setUser, login, logout } = useUserContext();
 
   const handleClick = (e) => {
-    // e.preventDefault();
-    // setUser({ username, password });
     e.preventDefault();
-    const { email, password } = state;
-    login(email, password);
-    setState({
-      email: "",
-      password: "",
-    });
+    login(username, password);
   };
   return (
     <div className="mt-8 flex flex-col justify-center items-center">
@@ -25,11 +18,11 @@ function Login() {
           <input
             autoFocus
             className="text-xs w-full mb-2 rounded border bg-gray-100 border-gray-300 px-2 py-2 focus:outline-none focus:border-gray-400 active:outline-none"
-            id="email"
+            id="username"
             placeholder="Phone number, username, or email"
             type="text"
-            value={state.email}
-            onChange={(e) => setState({ ...state, email: e.target.value })}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
           <input
             autoFocus
@@ -37,16 +30,14 @@ function Login() {
             id="password"
             placeholder="Password"
             type="password"
-            value={state.password}
-            onChange={(e) => setState({ ...state, password: e.target.value })}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
           <button
             className=" text-sm text-center bg-blue-300 text-white py-1 rounded font-medium"
             type="submit"
             onClick={(e) => {
-              e.preventDefault();
               handleClick(e);
-              console.log(state);
             }}>
             Log In
           </button>
@@ -63,7 +54,7 @@ function Login() {
         <a className="text-xs text-blue-900 mt-4 cursor-pointer -mb-4">Forgot password?</a>
       </div>
       <div className="bg-white border border-gray-300 text-center w-80 py-4">
-        <span className="text-sm">Don't have an account?</span>
+        <span className="text-sm">Don`&#39;`t have an account?</span>
         <a className="text-blue-500 text-sm font-semibold">Sign up</a>
       </div>
       <div className="mt-3 text-center">

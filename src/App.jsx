@@ -6,7 +6,8 @@ import Login from "./pages/Login.jsx";
 
 function App() {
   const { state } = useUserContext();
-  return !state.isLoggedIn ? (
+  console.log("state in App.jsx", state);
+  return !state.isAuthenticated ? (
     <Login />
   ) : (
     <>
