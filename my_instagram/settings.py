@@ -60,7 +60,8 @@ INSTALLED_APPS = [
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",  # Use in-memory layer for development
+        # Use in-memory layer for development
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
     },
 }
 
