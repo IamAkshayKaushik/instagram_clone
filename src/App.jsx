@@ -1,14 +1,15 @@
 // import logo from "./logo.svg";
 import Navbar from "./components/Navbar.jsx";
 import Home from "./pages/Home.jsx";
-import Login from "./pages/Login.jsx";
 import { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { login, logout } from "./store/userSlice";
 import UserService from "./services/userService";
+import { useNavigate } from "react-router-dom";
 
 function App() {
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const dispatch = useDispatch();
 
@@ -19,6 +20,7 @@ function App() {
           dispatch(login(user));
         } else {
           dispatch(logout());
+          navigate("/login");
         }
       })
       .catch((error) => {
@@ -27,14 +29,16 @@ function App() {
       .finally(() => {
         setLoading(false);
       });
-  }, [dispatch]);
+  }, [dispatch, navigate]);
 
-  const state = useSelector((state) => state.user);
-  console.log("state in App.jsx", state);
+  // const state = useSelector((state) => state.user);
+  // console.log("state in App.jsx", state);
 
-  return !state.isAuthenticated ? (
-    <Login />
-  ) : (
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
     <>
       <Navbar />
       <Home />

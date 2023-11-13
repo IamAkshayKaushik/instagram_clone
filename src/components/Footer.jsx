@@ -1,10 +1,7 @@
 // import { useUserContext } from "../context";
-import UserService from "../services/userService";
-import { useDispatch } from "react-redux";
-import { logout } from "../store/userSlice";
+import LogoutBtn from "./Header/LogoutBtn";
 
 function Footer() {
-  const dispatch = useDispatch();
   // const { logout } = useUserContext();
   return (
     <footer className="py-5 text-center">
@@ -25,15 +22,7 @@ function Footer() {
           </a>
         </li>
         <li>
-          <button
-            onClick={(e) => {
-              UserService.fetchLogout().then(() => {
-                dispatch(logout());
-              });
-            }}
-            className="cursor-pointer">
-            Logout
-          </button>
+          <LogoutBtn>Log out</LogoutBtn>
         </li>
       </ul>
     </footer>

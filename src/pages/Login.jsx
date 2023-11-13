@@ -3,17 +3,20 @@ import { useState } from "react";
 import UserService from "../services/userService";
 import { useDispatch } from "react-redux";
 import { login } from "../store/userSlice";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
   const { fetchLogin } = UserService;
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const handleClick = async (e) => {
     e.preventDefault();
     const user = await fetchLogin(username, password);
     if (user) {
       dispatch(login(user));
+      navigate("/");
     }
   };
   return (
