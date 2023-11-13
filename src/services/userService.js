@@ -19,7 +19,12 @@ class UserService {
         password,
       }),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.ok) {
+          console.log("response", response);
+          return response.json();
+        }
+      })
       .then((result) => {
         if (result) {
           localStorage.setItem("user", JSON.stringify(result));
@@ -29,7 +34,16 @@ class UserService {
     return user;
   }
 
-  async fetchLogout() {
+  async fetchLogout(access_token) {
+    await fetch(getAPIUrl("logout"), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${access_token}`,
+      },
+      // body: JSON.stringify({}),
+    });
     localStorage.removeItem("user");
     // this.dispatch(logout());
   }
