@@ -53,8 +53,8 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
-        serializer = UserSerializer(self.user).data
-        print(serializer)
+        serializer = UserSerializer(
+            self.user, context={'request': self.context.get('request', None)}).data
         for k, v in serializer.items():
             data[k] = v
         return data
