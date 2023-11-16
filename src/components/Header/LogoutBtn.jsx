@@ -14,8 +14,12 @@ function LogoutBtn({ children, className = "", type = "button", ...props }) {
       className={`cursor-pointer ${className}`}
       onClick={() => {
         fetchLogout(state?.user.access).then(() => {
-          dispatch(logout());
-          navigate("/login");
+          try {
+            dispatch(logout());
+            navigate("/login");
+          } catch (error) {
+            console.error(error);
+          }
         });
       }}
       {...props}>
