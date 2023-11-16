@@ -17,7 +17,8 @@ export const APIEndpoints = {
 };
 
 export function getAPIUrl(endpoint) {
-  return `${BackendUrl}${APIEndpoints[endpoint]}`;
+  // return `${BackendUrl}${APIEndpoints[endpoint]}`;
+  return `${APIEndpoints[endpoint]}`;
 }
 
 // api.js
