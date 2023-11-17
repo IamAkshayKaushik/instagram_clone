@@ -66,7 +66,7 @@ function Navbar() {
     <nav className="bg-white sticky w-full top-0 border border-b-2 z-50">
       <div className="container max-w-5xl">
         <div className="flex flex-row items-center py-1">
-          <div className="basis-1/3">
+          <div className="basis-1/2 md:basis-1/3">
             <img
               src="https://logos-world.net/wp-content/uploads/2020/04/Instagram-Logo-2010-2013.png"
               alt="app logo"
@@ -75,7 +75,7 @@ function Navbar() {
           </div>
           {/* search */}
           {authStatus && (
-            <div className="basis-1/3 hidden md:block">
+            <div className="basis-1/2 md:basis-1/3 hidden md:block">
               <div className="relative">
                 <FontAwesomeIcon
                   icon={faMagnifyingGlass}
@@ -90,7 +90,7 @@ function Navbar() {
             </div>
           )}
 
-          <div className={authStatus ? `basis-1/3` : `basis-1/2`}>
+          <div className="basis-1/2 md:basis-1/3">
             <ul className="flex flex-row p-2 space-x-4 text-2xl items-center justify-end">
               {navItems.map((item, index) =>
                 item.active ? (
