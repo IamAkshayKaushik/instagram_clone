@@ -48,12 +48,12 @@ function Navbar() {
       active: authStatus,
       icon: faHeart,
     },
-    {
-      name: "Profile",
-      link: "/profile",
-      active: authStatus,
-      icon: faHouse,
-    },
+    // {
+    //   name: "Profile",
+    //   link: "/profile",
+    //   active: authStatus,
+    //   icon: faHouse,
+    // },
     {
       name: "Sign UP",
       link: "/signup",
@@ -75,7 +75,7 @@ function Navbar() {
           </div>
           {/* search */}
           {authStatus && (
-            <div className="basis-1/3 ">
+            <div className="basis-1/3 hidden md:block">
               <div className="relative">
                 <FontAwesomeIcon
                   icon={faMagnifyingGlass}
@@ -102,11 +102,20 @@ function Navbar() {
                 ) : null
               )}
               {authStatus && (
-                <li>
-                  <LogoutBtn>
-                    <FontAwesomeIcon icon={faRightFromBracket} />
-                  </LogoutBtn>
-                </li>
+                <>
+                  <li>
+                    <img
+                      src="https://avatars.githubusercontent.com/u/35657486?v=4"
+                      alt="profile"
+                      className="rounded-full w-8 cursor-pointer"
+                    />
+                  </li>
+                  <li>
+                    <LogoutBtn>
+                      <FontAwesomeIcon icon={faRightFromBracket} />
+                    </LogoutBtn>
+                  </li>
+                </>
               )}
             </ul>
             {/* <ul className="flex flex-row p-2 space-x-4 text-2xl items-center justify-end">
