@@ -1,0 +1,351 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <style>
+    .video-grid-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background-color: black;
+    }
+
+    .main-grid-container {
+      display: grid;
+      grid-template-columns: 60% 20%;
+    }
+
+    video {
+      border-radius: 20%;
+      background-color: black;
+    }
+  </style>
+  <meta charset="utf-8" />
+  <title>Calling</title>
+</head>
+
+<body>
+  <h3 id="label-username">USername</h3>
+  <div><input id="username" type="text" /><button id="btn-join">join call</button></div>
+  <div class="main-grid-container">
+    <div id="video-container">
+      <div><video id="local-video" autoplay playsinline></video></div>
+      <button id="btn-toggle-audio">Mute</button>
+      <button id="btn-toggle-video">Video off</button>
+    </div>
+
+    <div id="chat">
+      <h3>Chat</h3>
+      <div id="messages">
+        <ul id="message-list"></ul>
+      </div>
+      <div><input id="msg" /><button id="btn-send-msg">Send Message</button></div>
+      <button id="btn-share-screen">Share Screen</button>
+    </div>
+  </div>
+
+
+  <script>
+    var websocket;
+    var mapPeer = {};
+    let labelUsername = document.querySelector("#label-username");
+    let usernameInput = document.querySelector("#username");
+    let btnJoin = document.querySelector("#btn-join");
+    let messageList = document.querySelector("#message-list")
+    let messageInput = document.querySelector('#msg')
+    let username;
+    btnJoin.addEventListener('click',
+      () => {
+        username = usernameInput.value;
+        if (username == '') return
+        usernameInput.value = '';
+        usernameInput.disabled = true
+        usernameInput.style.visibility = 'hidden';
+
+        btnJoin.disabled = true
+        btnJoin.style.visibility = 'hidden';
+
+        let labelUsername = document.querySelector("#label-username");
+        labelUsername.innerHTML = username;
+
+        let loc = window.location;
+        let wsStart = loc.protocol === "https:" ? 'wss://' : 'ws://';
+
+        let endpoint = wsStart + loc.host + '/ws/calls/'
+
+        websocket = new WebSocket(endpoint)
+
+        websocket.addEventListener('open', function (event) {
+          console.log('connection opened');
+          sendSignal('new-peer', {})
+        })
+
+        websocket.addEventListener('message', webSocketOnMessage)
+
+        websocket.addEventListener('close', function (event) {
+          console.log('connection closed');
+        })
+
+        websocket.addEventListener('error', function (event) {
+          console.log('connection error');
+        })
+      })
+
+
+    let btnSendMessage = document.querySelector('#btn-send-msg')
+    btnSendMessage.addEventListener('click', sendMsgOnClick)
+
+    function webSocketOnMessage(event) {
+      console.log('webSocketOnMessage');
+      let data = JSON.parse(event.data)
+      let peerUsername = data['peer']
+      let action = data['action']
+
+      if (username === peerUsername) return
+
+      let receiver_channel_name = data['message']['receiver_channel_name']
+      if (action === "new-peer") {
+        console.log("Create " + action);
+        createOfferer(peerUsername, receiver_channel_name)
+      }
+
+      if (action === 'new-offer') {
+        let offer = data['message']['sdp']
+        createAnswers(offer, peerUsername, receiver_channel_name)
+
+        return
+      }
+
+      if (action === 'new-answer') {
+        let answer = data['message']['sdp']
+
+        let peer = mapPeer[peerUsername][0]
+        peer.setRemoteDescription(answer)
+        return
+      }
+
+    }
+
+
+    var localStream = new MediaStream();
+    const constraints = {
+      video: true,
+      audio: true
+    }
+
+
+    var localVideo = document.querySelector("#local-video");
+    var btnToggleAudio = document.querySelector("#btn-toggle-audio")
+    var btnToggleVideo = document.querySelector("#btn-toggle-video")
+
+    var userMedia = navigator.mediaDevices.getUserMedia(constraints).then(stream => {
+      localStream = stream;
+      localVideo.srcObject = localStream;
+      localVideo.muted = true;
+
+      var audioTracks = stream.getAudioTracks()
+      var videoTracks = stream.getVideoTracks()
+
+      audioTracks[0].enabled = true
+      videoTracks[0].enabled = true
+      btnToggleAudio.addEventListener('click', () => {
+        audioTracks[0].enabled = !audioTracks[0].enabled
+
+        if (audioTracks[0].enabled) {
+          btnToggleAudio.innerHTML = "Audio Mute"
+          return
+        }
+        btnToggleAudio.innerHTML = 'Audio Unmute'
+
+      })
+
+
+      btnToggleVideo.addEventListener('click', () => {
+        videoTracks[0].enabled = !videoTracks[0].enabled
+
+        if (videoTracks[0].enabled) {
+          btnToggleVideo.innerHTML = "Video Off"
+          return
+        }
+        btnToggleVideo.innerHTML = 'Video on'
+
+      })
+
+    }).catch(error => console.log("Error Accessing Media devices", error)
+    )
+
+
+
+
+    function sendSignal(action, message) {
+      let jsonStr = JSON.stringify({
+        'peer': username,
+        'action': action,
+        'message': message
+      })
+      console.log('inside sendSignal ' + action);
+      console.log(jsonStr);
+      websocket.send(jsonStr)
+    }
+
+    function createOfferer(peerUsername, receiver_channel_name) {
+      console.log("inside createOffer");
+      let peer = new RTCPeerConnection(null)
+      addLocalTracks(peer)
+      let dataChannel = peer.createDataChannel('channel')
+      dataChannel.addEventListener('open', () => {
+        console.log('dataChannel Opened in createOffer');
+      })
+
+      dataChannel.addEventListener('message', dcOnMessage)
+
+      let remoteVideo = createVideo(peerUsername);
+      setOnTrack(peer, remoteVideo)
+      mapPeer[peerUsername] = [peer, dataChannel]
+
+      peer.addEventListener('iceconnectionstatechange', () => {
+        let iceConnectionState = peer.iceConnectionState
+        if (iceConnectionState == 'failed' || iceConnectionState == "disconnected" || iceConnectionState == "closed") {
+          delete mapPeer[peerUsername];
+
+          if (iceConnectionState != 'closed') {
+            peer.close()
+          }
+          removeVideo(remoteVideo)
+        }
+      })
+
+      peer.addEventListener('icecandidate', (event) => {
+        if (event.candidate) {
+          console.log('New Ice Candidate', JSON.stringify(peer.localDescription));
+          return
+        }
+        sendSignal('new-offer', {
+          'sdp': peer.localDescription,
+          'receiver_channel_name': receiver_channel_name
+        })
+      })
+      peer.createOffer().then(o => peer.setLocalDescription(o)).then(() => {
+        console.log('Local Description Set Successfully');
+      })
+    }
+
+    function createAnswers(offer, peerUsername, receiver_channel_name) {
+      let peer = new RTCPeerConnection(null)
+      addLocalTracks(peer)
+
+      let remoteVideo = createVideo(peerUsername);
+      setOnTrack(peer, remoteVideo)
+
+      peer.addEventListener('datachannel', e => {
+        peer.dataChannel = e.channel
+        peer.dataChannel.addEventListener('open', () => {
+          console.log('dataChannel Opened in createAnswers');
+        })
+
+        peer.dataChannel.addEventListener('message', dcOnMessage)
+        mapPeer[peerUsername] = [peer, peer.dataChannel]
+      })
+
+
+
+      peer.addEventListener('iceconnectionstatechange', () => {
+        let iceConnectionState = peer.iceConnectionState
+        if (iceConnectionState == 'failed' || iceConnectionState == "disconnected" || iceConnectionState == "closed") {
+          delete mapPeer[peerUsername];
+
+          if (iceConnectionState != 'closed') {
+            peer.close()
+          }
+          removeVideo(remoteVideo)
+        }
+      })
+
+      peer.addEventListener('icecandidate', (event) => {
+        if (event.candidate) {
+          console.log('New Ice Candidate', JSON.stringify(peer.localDescription));
+          return
+        }
+        sendSignal('new-answer', {
+          'sdp': peer.localDescription,
+          'receiver_channel_name': receiver_channel_name
+        })
+      })
+      peer.setRemoteDescription(offer).then(() => {
+        console.log("Remote Description Set Sucessfully");
+        return peer.createAnswer()
+      }).then((a) => {
+        console.log("Answer Created");
+        peer.setLocalDescription(a)
+      })
+    }
+
+    function addLocalTracks(peer) {
+      localStream.getTracks().forEach(track => {
+        peer.addTrack(track, localStream)
+      })
+      return
+    }
+
+
+    function dcOnMessage(event) {
+      let message = event.data
+      let li = document.createElement('li')
+      li.appendChild(document.createTextNode(message))
+      messageList.appendChild(li)
+    }
+
+    function createVideo(peerUsername) {
+      let videoContainer = document.querySelector("#video-container")
+      let remoteVideo = document.createElement('video')
+      remoteVideo.id = peerUsername + "-video"
+      remoteVideo.autoplay = true
+      remoteVideo.playsInline = true
+
+      let videoWrapper = document.createElement('div')
+      videoContainer.appendChild(videoWrapper)
+      videoWrapper.appendChild(remoteVideo)
+      return remoteVideo
+    }
+
+    function setOnTrack(peer, remoteVideo) {
+      let remoteStream = new MediaStream()
+      remoteVideo.srcObject = remoteStream
+
+      peer.addEventListener('track', async (event) => {
+        remoteStream.addTrack(event.track, remoteStream)
+      })
+    }
+
+    function removeVideo(video) {
+      let videoWrapper = video.parentNode
+      videoWrapper.parentNode.removeChild(videoWrapper)
+    }
+
+    function getDataChannels() {
+      let dataChannels = []
+      for (peerUsername in mapPeer) {
+        let channel = mapPeer[peerUsername][1]
+        dataChannels.push(channel)
+      }
+      return dataChannels
+    }
+
+    function sendMsgOnClick() {
+      let message = messageInput.value
+      let li = document.createElement('li')
+      li.appendChild(document.createTextNode("Me " + message))
+      messageList.appendChild(li)
+
+      let dataChannels = getDataChannels()
+      message = username + ':' + message
+
+      for (index in dataChannels) {
+        dataChannels[index].send(message)
+      }
+      messageInput.value = ''
+    }
+  </script>
+</body>
+
+</html>
