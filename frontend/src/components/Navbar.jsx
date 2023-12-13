@@ -14,6 +14,7 @@ import {
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import LogoutBtn from "./Header/LogoutBtn";
+import NavbarDropdown from "./Header/NavbarDropdown";
 
 function Navbar() {
   const authStatus = useSelector((state) => state.user.isAuthenticated);
@@ -31,17 +32,17 @@ function Navbar() {
       icon: faCompass,
     },
     {
-      name: "Notifications",
-      link: "/notifications",
-      active: authStatus,
-      icon: faCommentDots,
-    },
-    {
       name: "Messages",
-      link: "/messages",
+      link: "/inbox",
       active: authStatus,
       icon: faSquarePlus,
     },
+    // {
+    //   name: "Notifications",
+    //   link: "/notifications",
+    //   active: authStatus,
+    //   icon: faCommentDots,
+    // },
     {
       name: "Bookmarks",
       link: "/bookmarks",
@@ -104,11 +105,7 @@ function Navbar() {
               {authStatus && (
                 <>
                   <li>
-                    <img
-                      src="https://avatars.githubusercontent.com/u/35657486?v=4"
-                      alt="profile"
-                      className="rounded-full w-8 cursor-pointer"
-                    />
+                    <NavbarDropdown />
                   </li>
                   <li>
                     <LogoutBtn>
