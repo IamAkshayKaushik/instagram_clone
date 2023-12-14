@@ -1,22 +1,24 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.jsx";
 import "./index.css";
-// import { UserContextProvider } from "./context/index";
 import { Provider } from "react-redux";
 import store from "./store/store";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login.jsx";
+import Login from "./pages/Login";
 import Profile from "./pages/Profile";
+import Chat from "./pages/Chat";
+import Protected from "./pages/Protected";
+import Home from "./pages/Home";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Provider store={store}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<App />} />
+          <Route path="/" element={<Protected Component={Home} />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile" element={<Protected Component={Profile} />} />
+          <Route path="/inbox" element={<Protected Component={Chat} />} />
         </Routes>
       </BrowserRouter>
     </Provider>
