@@ -3,92 +3,140 @@ import { useSelector } from "react-redux";
 import { SingleMessage } from "./Index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faVideo } from "@fortawesome/free-solid-svg-icons";
+import { useState, useEffect } from "react";
 function Messages(props) {
   const { user: target_user } = props;
   const user = useSelector((state) => state.user.user);
-  const messageList = [
-    {
-      id: 1,
-      user: {
-        id: 1,
-        name: "Jhon Doe",
-        image:
-          "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-      },
-      message: "Can be verified on any platform using docker",
-    },
-    {
-      id: 2,
-      user: {
-        id: user.id,
-        name: "Jhon Doe",
-        image: user.profile.profile_picture,
-      },
-      message:
-        "Your error message says permission denied, npm global installs must be given root privileges.",
-    },
-    {
-      id: 3,
-      user: {
-        id: 1,
-        name: "Jhon Doe",
-        image:
-          "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-      },
-      message: "Command was run with root privileges. I`'`m sure about that.",
-    },
-    {
-      id: 4,
-      user: {
-        id: 1,
-        name: "Jhon Doe",
-        image:
-          "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-      },
-      message: "I`'`ve update the description so it`'`s more obviously now",
-    },
-    {
-      id: 5,
-      user: {
-        id: 1,
-        name: "Jhon Doe",
-        image:
-          "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-      },
-      message: "FYI https://askubuntu.com/a/700266/510172",
-    },
-    {
-      id: 6,
-      user: {
-        id: 1,
-        name: "Jhon Doe",
-        image:
-          "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-      },
-      message:
-        "Check the line above (it ends with a # so, I`'`m running it as root ) # npm install -g @vue/devtools",
-    },
-    {
-      id: 7,
-      user: {
-        id: user.id,
-        name: user.name,
-        image: user.profile.profile_picture,
-      },
-      message:
-        "Any updates on this issue? I`'`m getting the same error when trying to install devtools. Thanks",
-    },
-    {
-      id: 8,
-      user: {
-        id: 1,
-        name: "Jhon Doe",
-        image:
-          "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-      },
-      message: "Thanks for your message David. I thought I`'`m alone with this issue.",
-    },
-  ];
+  const [messages, setMessages] = useState([]);
+  const [messageInput, setMessageInput] = useState("");
+  const [newSocket, setNewSocket] = useState(null);
+  // const messageList = [
+  //   {
+  //     id: 1,
+  //     user: {
+  //       id: 1,
+  //       name: "Jhon Doe",
+  //       image:
+  //         "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+  //     },
+  //     message: "Can be verified on any platform using docker",
+  //   },
+  //   {
+  //     id: 2,
+  //     user: {
+  //       id: user.id,
+  //       name: "Jhon Doe",
+  //       image: user.profile.profile_picture,
+  //     },
+  //     message:
+  //       "Your error message says permission denied, npm global installs must be given root privileges.",
+  //   },
+  //   {
+  //     id: 3,
+  //     user: {
+  //       id: 1,
+  //       name: "Jhon Doe",
+  //       image:
+  //         "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+  //     },
+  //     message: "Command was run with root privileges. I`'`m sure about that.",
+  //   },
+  //   {
+  //     id: 4,
+  //     user: {
+  //       id: 1,
+  //       name: "Jhon Doe",
+  //       image:
+  //         "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+  //     },
+  //     message: "I`'`ve update the description so it`'`s more obviously now",
+  //   },
+  //   {
+  //     id: 5,
+  //     user: {
+  //       id: 1,
+  //       name: "Jhon Doe",
+  //       image:
+  //         "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+  //     },
+  //     message: "FYI https://askubuntu.com/a/700266/510172",
+  //   },
+  //   {
+  //     id: 6,
+  //     user: {
+  //       id: 1,
+  //       name: "Jhon Doe",
+  //       image:
+  //         "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+  //     },
+  //     message:
+  //       "Check the line above (it ends with a # so, I`'`m running it as root ) # npm install -g @vue/devtools",
+  //   },
+  //   {
+  //     id: 7,
+  //     user: {
+  //       id: user.id,
+  //       name: user.name,
+  //       image: user.profile.profile_picture,
+  //     },
+  //     message:
+  //       "Any updates on this issue? I`'`m getting the same error when trying to install devtools. Thanks",
+  //   },
+  //   {
+  //     id: 8,
+  //     user: {
+  //       id: 1,
+  //       name: "Jhon Doe",
+  //       image:
+  //         "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+  //     },
+  //     message: "Thanks for your message David. I thought I`'`m alone with this issue.",
+  //   },
+  // ];
+  const handleMessageSend = () => {
+    if (messageInput.trim() !== "") {
+      const message = {
+        id: new Date().toISOString(),
+        user: {
+          id: user.id,
+          name: user.username,
+          image: user.profile.profile_picture,
+        },
+        message: messageInput,
+      };
+      newSocket.send(JSON.stringify(message));
+      setMessageInput("");
+    }
+  };
+
+  useEffect(() => {
+    const socket = new WebSocket(
+      "ws://localhost:8000/ws/chat/?token=" + user.access + "&receiver_user_id=" + target_user.id
+    );
+
+    socket.onopen = () => {
+      console.log("WebSocket connection established.");
+    };
+
+    socket.onmessage = (event) => {
+      const receivedMessage = JSON.parse(event.data);
+      setMessages((prevMessages) => [...prevMessages, receivedMessage.message]);
+    };
+
+    socket.onclose = () => {
+      console.log("WebSocket connection closed.");
+    };
+
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+    setNewSocket(socket);
+
+    return () => {
+      socket.close();
+      setNewSocket(null);
+    };
+  }, [target_user.id, user.access]);
   return (
     <div className="flex-1 p:2 sm:p-6 justify-between flex flex-col h-screen">
       <div className="flex sm:items-center justify-between py-3 border-b-2 border-gray-200">
@@ -155,12 +203,12 @@ function Messages(props) {
       <div
         id="messages"
         className="flex flex-col space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
-        {messageList.map((message) => (
+        {messages?.map((message) => (
           <SingleMessage
             key={message.id}
-            message={message.message}
-            image={message.user.image}
-            isThisMyMessage={message.user.id === user.id}
+            message={message?.message}
+            image={message?.user.image}
+            isThisMyMessage={message?.user.id === user.id}
           />
         ))}
       </div>
@@ -188,6 +236,8 @@ function Messages(props) {
             type="text"
             placeholder="Write your message!"
             className="w-full focus:outline-none focus:placeholder-gray-400 text-gray-600 placeholder-gray-600 pl-12 bg-gray-200 rounded-md py-3"
+            onChange={(e) => setMessageInput(e.target.value)}
+            value={messageInput}
           />
           <div className="absolute right-0 items-center inset-y-0 hidden sm:flex">
             <button
@@ -245,7 +295,8 @@ function Messages(props) {
             </button>
             <button
               type="button"
-              className="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none">
+              className="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none"
+              onClick={handleMessageSend}>
               <span className="font-bold">Send</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
