@@ -7,18 +7,22 @@ export const APIEndpoints = {
   userProfile: "/api/accounts/profile/",
   refresh: "/api/accounts/token/refresh/",
   postsList: "/api/posts/posts/",
-  commentsList: "/api/posts/comments/",
-  likesList: "/api/posts/likes/",
-  sharesList: "/api/posts/shares/",
   post: "/api/posts/posts/<int:pk>/",
-  comment: "/api/posts/comments/<int:pk>/",
-  like: "/api/posts/likes/<int:pk>/",
+  postComments: "/api/posts/comments/",
+  postComment: "/api/posts/comments/<int:pk>/",
+  postLikes: "/api/posts/likes/",
+  postLike: "/api/posts/likes/<int:pk>/",
+  sharesList: "/api/posts/shares/",
   share: "/api/posts/shares/<int:pk>/",
+  followerList: "/api/follow/follow/",
+  follower: "/api/follow/follow/<int:pk>/",
+  chatSocket: "/ws/chat/",
+  callsSocket: "/ws/calls/",
 };
 
 export function getAPIUrl(endpoint) {
-  // return `${BackendUrl}${APIEndpoints[endpoint]}`;
-  return `${APIEndpoints[endpoint]}`;
+  return `${BackendUrl}${APIEndpoints[endpoint]}`;
+  // return `${APIEndpoints[endpoint]}`;
 }
 
 // api.js
