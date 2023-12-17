@@ -4,6 +4,7 @@ import { SingleMessage } from "./Index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faVideo } from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect } from "react";
+import { getAPIUrl } from "../../conf/conf";
 function Messages(props) {
   const { user: target_user } = props;
   const user = useSelector((state) => state.user.user);
@@ -110,8 +111,12 @@ function Messages(props) {
   };
 
   useEffect(() => {
+    let loc = window.location;
+    let wsStart = loc.protocol === "https:" ? "wss://" : "ws://";
+    let endpoint = getAPIUrl("chatSocket").replace(loc.protocol, wsStart);
+
     const socket = new WebSocket(
-      "ws://localhost:8000/ws/chat/?token=" + user.access + "&receiver_user_id=" + target_user.id
+      endpoint + "?token=" + user.access + "&receiver_user_id=" + target_user.id
     );
 
     socket.onopen = () => {
@@ -148,16 +153,16 @@ function Messages(props) {
               </svg>
             </span>
             <img
-              src={target_user.image}
+              src={target_user.profile.profile_picture}
               alt=""
               className="w-10 sm:w-16 h-10 sm:h-16 rounded-full"
             />
           </div>
           <div className="flex flex-col leading-tight">
             <div className="text-2xl mt-1 flex items-center">
-              <span className="text-gray-700 mr-3">{target_user.name}</span>
+              <span className="text-gray-700 mr-3">{target_user.username}</span>
             </div>
-            <span className="text-lg text-gray-600">Junior Developer</span>
+            <span className="text-lg text-gray-600">{target_user.profile.bio}</span>
           </div>
         </div>
         <div className="flex items-center space-x-2">
