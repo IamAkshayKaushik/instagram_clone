@@ -1,22 +1,26 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Messages } from "../components/Chat/Index";
+import { getAPIUrl } from "../conf/conf";
+import UserService from "../services/userService";
+import { useSelector } from "react-redux";
 function Chat() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [isActive, setIsActive] = useState(false);
-  const user_list = [
-    {
-      id: 3,
-      name: "junior.coders",
-      image: "https://i.ibb.co/0ZDqmDs/142030673-447983159572512-6561194794076636819-n.jpg",
-      last_active_time: "Active 20s Ago",
-    },
-    {
-      id: 2,
-      name: "tabaghe16",
-      image: "https://i.ibb.co/n8D3NYv/107410209-890400198133639-1048997058040173171-n.jpg",
-      last_active_time: "Active 6h Ago",
-    },
-  ];
+  const [followers, setFollowers] = useState([]);
+  const { fetchData } = UserService;
+  const { access } = useSelector((state) => state.user.user);
+
+  useEffect(() => {
+    const headers = { Authorization: `Bearer ${access}` };
+    fetchData(getAPIUrl("followerList"), { headers, method: "GET" })
+      .then((res) => {
+        setFollowers(res.results);
+      })
+      .catch((error) => {
+        console.error(error);
+        setFollowers(null);
+      });
+  }, [access, fetchData]);
 
   const handleUserSelected = (user) => {
     setIsActive(true);
@@ -63,23 +67,28 @@ function Chat() {
             </div>
 
             <ul className="py-1 overflow-auto">
-              {user_list.map((user) => (
-                <li key={user.id}>
-                  <button
-                    className="flex items-center w-full px-4 py-2 select-none hover:bg-gray-100 focus:outline-none"
-                    onClick={() => handleUserSelected(user)}>
-                    <img
-                      className="w-12 mr-3 rounded-full border"
-                      src={user.image}
-                      alt="Junior Coders"
-                    />
-                    <div className="transform translate-y-0.5 text-left">
-                      <h3 className="leading-4">{user.name}</h3>
-                      <span className="text-xs text-gray-500">{user.last_active_time}</span>
-                    </div>
-                  </button>
-                </li>
-              ))}
+              {followers ? (
+                followers.map((user) => (
+                  <li key={user.following.id}>
+                    <button
+                      className="flex items-center w-full px-4 py-2 select-none hover:bg-gray-100 focus:outline-none"
+                      onClick={() => handleUserSelected(user.following)}>
+                      <img
+                        className="w-12 mr-3 rounded-full border"
+                        src={user.following.profile.profile_picture}
+                        alt="Junior Coders"
+                      />
+                      <div className="transform translate-y-0.5 text-left">
+                        <h3 className="leading-4">{user.following.username}</h3>
+                        <span className="text-xs text-gray-500">{user.last_active_time}</span>
+                      </div>
+                    </button>
+                  </li>
+                ))
+              ) : (
+                <li>Loading...</li>
+              )}
+              {followers === null && <li>Error fetching Friends!</li>}
             </ul>
           </div>
           {isActive ? (
