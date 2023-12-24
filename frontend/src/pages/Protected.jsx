@@ -55,7 +55,7 @@ function Protected(props) {
   );
 }
 Protected.propTypes = {
-  Component: PropTypes.node,
+  Component: PropTypes.func.isRequired,
 };
 
 export default Protected;
