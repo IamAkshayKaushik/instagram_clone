@@ -126,42 +126,26 @@ class CallingConsumer(AsyncWebsocketConsumer):
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        print("connected")
-        self.user = self.scope["user"]
-        query_params = {}
-        # Use regular expression to extract query parameters
-        query_matches = re.findall(r'([^&=]+)=([^&]+)', self.scope['query_string'].decode('utf-8'))
-        for key, value in query_matches:
-            query_params[key] = value
-        my_user_id = await self.check_authorization(query_params.get('token'))
+        print("Connected")
+        # self.user = self.scope["user"]
+        query_params = self._extract_query_params()
+        my_user_id = await self._check_authorization(query_params.get('token'))
         other_user_id = query_params.get('receiver_user_id')
         self.other_user_id = other_user_id
-        print(my_user_id, other_user_id)
-        if (not my_user_id) or (other_user_id is None):
+        if not my_user_id or not other_user_id:
             return await self.close()
-        # Get user from JWT auth
-        self.user = await get_user(my_user_id)
-        if int(my_user_id) > int(other_user_id):
-            self.room_name = f'{my_user_id}-{other_user_id}'
-        else:
-            self.room_name = f'{other_user_id}-{my_user_id}'
-
+        print(my_user_id, other_user_id)
+        self.user = await self._get_user(my_user_id)
+        self.room_name = self._get_room_name(my_user_id, other_user_id)
         self.room_group_name = f'chat_{self.room_name}'
-
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name,
-        )
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
 
     async def disconnect(self, code):
-        print("disconnected")
-        if (not self.other_user_id) or (not self.user.id):
+        print("Disconnected")
+        if not self.other_user_id or not self.user.id:
             return await self.close()
-        self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+        self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data=None, bytes_data=None):
         print('Received')
@@ -170,32 +154,40 @@ class ChatConsumer(AsyncWebsocketConsumer):
         received_data['channel_layer'] = self.channel_name
         if not received_data.get('room_group_name'):
             received_data['room_group_name'] = self.room_group_name
-
-        await self.channel_layer.group_send(
-            received_data['room_group_name'],
-            {
-                "type": "send.message",
-                "message": received_data
-            }
-        )
+        await self.channel_layer.group_send(received_data['room_group_name'], {
+            "type": "send.message",
+            "message": received_data
+        })
 
     async def send_message(self, received_data):
-        await self.send(
-            text_data=json.dumps(received_data)
-        )
+        await self.send(text_data=json.dumps(received_data))
 
     @database_sync_to_async
-    def check_authorization(self, token):
-        # Retrieve the token from the WebSocket headers
-        # token = self.scope.get('token')
+    def _check_authorization(self, token):
         try:
-            # Check if the token is valid
             if token and AccessToken(token):
-                # Token is valid, proceed
+                print('Token is valid', AccessToken(token).payload)
                 return AccessToken(token).payload.get('user_id')
             else:
-                # Token is invalid, close the connection
                 self.close()
         except Exception as e:
-            print(self.check_authorization.__name__, e)
+            print(self._check_authorization.__name__, e)
             self.close()
+
+    @database_sync_to_async
+    def _get_user(self, user_id):
+        # Retrieve user from the database based on user_id
+        return User.objects.get(id=user_id)
+
+    def _get_room_name(self, user_id1, user_id2):
+        if int(user_id1) > int(user_id2):
+            return f'{user_id1}-{user_id2}'
+        else:
+            return f'{user_id2}-{user_id1}'
+
+    def _extract_query_params(self):
+        query_params = {}
+        query_matches = re.findall(r'([^&=]+)=([^&]+)', self.scope['query_string'].decode('utf-8'))
+        for key, value in query_matches:
+            query_params[key] = value
+        return query_params
