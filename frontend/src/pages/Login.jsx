@@ -3,7 +3,7 @@ import { useState } from "react";
 import UserService from "../services/userService";
 import { useDispatch } from "react-redux";
 import { login } from "../store/userSlice";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Login() {
   const { fetchLogin } = UserService;
@@ -64,7 +64,10 @@ function Login() {
       </div>
       <div className="bg-white border border-gray-300 text-center w-80 py-4">
         <span className="text-sm">Don`&#39;`t have an account?</span>
-        <a className="text-blue-500 text-sm font-semibold">Sign up</a>
+        <Link to="/signup" className="text-blue-500 text-sm font-semibold">
+          {" "}
+          Sign up
+        </Link>
       </div>
       <div className="mt-3 text-center">
         <span className="text-xs">Get the app</span>

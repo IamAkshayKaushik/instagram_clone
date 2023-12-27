@@ -100,7 +100,7 @@ class UserService {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`Fetch error: ${response.status}`);
+        throw new Error(`API error: ${response.status}`);
       }
 
       const data = await response.json();

@@ -10,6 +10,7 @@ import Chat from "./pages/Chat";
 import Protected from "./pages/Protected";
 import Home from "./pages/Home";
 import VideoCall from "./pages/VideoCall";
+import SignUp from "./pages/SignUp";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -21,6 +22,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <Route path="/profile" element={<Protected Component={Profile} />} />
           <Route path="/inbox" element={<Protected Component={Chat} />} />
           <Route path="/videocall" element={<VideoCall />} />
+          <Route path="/signup" element={<SignUp />} />
         </Routes>
       </BrowserRouter>
     </Provider>
